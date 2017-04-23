@@ -5,11 +5,25 @@
 #include "socket.hh"
 #include "http.hh"
 
+bool verbose = true;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//usage
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void usage()
+{
+  std::cout << "-p PORT: server port (default 3000)" << std::endl;
+  std::cout << "-v: verbose output" << std::endl;
+  std::cout << "-h: help, exit" << std::endl;
+  exit(0);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 //main
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void handle_client(socket_t& socket);
+int handle_client(socket_t& socket);
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +33,12 @@ int main(int argc, char *argv[])
   {
     switch (argv[i][1])
     {
+    case 'h':
+      usage();
+      break;
+    case 'v':
+      verbose = true;
+      break;
     case 'p':
       port = atoi(argv[i + 1]);
       i++;
@@ -36,7 +56,10 @@ int main(int argc, char *argv[])
     char *str_ip = inet_ntoa(socket.m_sockaddr_in.sin_addr);
     std::cout << prt_time() << "server accepted: " << str_ip << "," << socket.m_socket_fd << std::endl;
 
-    handle_client(socket);
+    if (handle_client(socket) < 0)
+    {
+      std::cout << "error on client handling";
+    }
     socket.close();
   }
   server.close();
@@ -47,20 +70,74 @@ int main(int argc, char *argv[])
 //handle_client
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void handle_client(socket_t& socket)
+int handle_client(socket_t& socket)
 {
-  if (socket.parse_http_headers() < 0)
-  {
+  std::string http_headers;
+  int recv_size; // size in bytes received or -1 on error 
+  const int size_buf = 4096;
+  char buf[size_buf];
 
+  if (socket.parse_http_headers(http_headers) < 0)
+  {
+    std::cout << "parse_http_headers error\n";
+    return -1;
   }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  //find Content-Length:
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  size_t pos = http_headers.find("Content-Length: ");
+  if (pos == std::string::npos)
+  {
+    std::cout << "Content-Length: not found in body\n";
+    return -1;
+  }
+
+  pos = pos + std::string("Content-Length: ").size();
+  //assume boby lenght has 2 characters
+  std::string str_len = http_headers.substr(pos, 2);
+
+  if (verbose)
+  {
+    std::cout << "received: Content-Length: " << str_len << std::endl;
+  }
+
+  //now get body using size of Content-Length
+  int len_recv = std::stoi(str_len);
+  if ((recv_size = recv(socket.m_socket_fd, buf, len_recv, 0)) == -1)
+  {
+    std::cout << "recv error: " << strerror(errno) << std::endl;
+    return -1;
+  }
+
+  std::string str_body(buf);
+  str_body.resize(len_recv);
+
+  if (verbose)
+  {
+    std::cout << "received: " << str_body << std::endl;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  //response
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::string str_response("HTTP/1.1 200 OK\r\n\r\n");
   str_response += "<html><body><h1>Server</h1></body></html>";
 
+  if (verbose)
+  {
+    std::cout << str_response << std::endl;
+  }
+
   if (socket.write(str_response.c_str(), str_response.size()) < 0)
   {
-
+    std::cout << "write response error\n";
+    return -1;
   }
+
+  return 0;
 }
 
 

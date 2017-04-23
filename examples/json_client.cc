@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <jansson.h>
 #include "socket.hh"
 
 unsigned short port = 2001;
@@ -15,16 +14,12 @@ unsigned short port = 2001;
 
 int main(int argc, char *argv[])
 {
+#if defined (HAVE_JANSSON)
   char buf_server[255]; // server host name or IP
-  char response_name[255]; // add to response.json
   char* buf = NULL;
   std::string str_response;
 
-  if (argc < 3)
-  {
-    std::cout << "usage: ./json_client -s <star server IP address/host name> -p <port>" << std::endl;
-    return 1;
-  }
+  strcpy(buf_server, "127.0.0.1");
 
   for (int i = 1; i < argc && argv[i][0] == '-'; i++)
   {
@@ -38,11 +33,6 @@ int main(int argc, char *argv[])
       port = atoi(argv[i + 1]);
       i++;
       break;
-    case 'f':
-      strcpy(response_name, argv[i + 1]);
-      str_response = response_name;
-      i++;
-      break;
     }
   }
 
@@ -54,7 +44,7 @@ int main(int argc, char *argv[])
   json_dump_file(request, "request.json", 0);
 
   tcp_client_t client(buf_server, port);
-  std::cout << "client connecting to: " << buf_server << ":" << port << std::endl;
+  std::cout << "client connecting to: " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //create socket and open connection
@@ -68,7 +58,7 @@ int main(int argc, char *argv[])
     json_decref(request);
     return 1;
   }
-  std::cout << "client connected to: " << buf_server << ":" << port << std::endl;
+  std::cout << "client connected to: " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //write request
@@ -86,7 +76,7 @@ int main(int argc, char *argv[])
   std::cout << "client sent: ";
 
   buf = json_dumps(request, 0);
-  std::cout << buf << std::endl;
+  std::cout << buf << " " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
   free(buf);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +105,7 @@ int main(int argc, char *argv[])
   std::cout << "client received: ";
 
   buf = json_dumps(response, 0);
-  std::cout << buf << std::endl;
+  std::cout << buf << " " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
   free(buf);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +113,7 @@ int main(int argc, char *argv[])
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   client.close();
-
+#endif
   return 0;
 }
 

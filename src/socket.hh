@@ -2,19 +2,22 @@
 #define LIB_SOCKET_H
 
 #if defined (_MSC_VER)
-#include <winsock2.h>
+#include <winsock.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif
 #include <string>
+#if defined (HAVE_JANSSON)
 #include <jansson.h>
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //utils
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::string str_extract(const std::string &str_in);
 std::string prt_time();
 int set_daemon(const char* str_dir);
 
@@ -35,16 +38,24 @@ public:
   std::string read_all_known_size(size_t size_read);
   int hostname_to_ip(const char *host_name, char *ip);
 
-  //JSON functions
-  int write_json(json_t *json);
-  json_t * read_json();
-
-  //HTTP
-  int parse_http_headers();
-
 public:
   int m_socket_fd; // socket descriptor 
   sockaddr_in m_sockaddr_in; // client address (used to store return value of server accept())
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  //HTTP functions, used by server and clients
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  int parse_http_headers(std::string &http_headers);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  //JSON functions, used by server and clients
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if defined (HAVE_JANSSON)
+  int write_json(json_t *json);
+  json_t * read_json();
+#endif
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

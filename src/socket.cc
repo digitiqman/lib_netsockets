@@ -8,23 +8,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h> //hostent
-#endif
-
-#include <iostream>
-#include <cerrno>
-#include <string>
-#include <stdio.h>
-#include <string.h>
-#include <iostream>
-#include <stdio.h>
-#include <jansson.h>
-#include <assert.h>
-#include <time.h>
-#include <ctime>
-#include "socket.hh"
-
-#if defined (_MSC_VER)
-#else
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -32,6 +15,17 @@
 #include <unistd.h>
 #include <syslog.h>
 #endif
+#include <iostream>
+#include <cerrno>
+#include <string>
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
+#include <stdio.h>
+#include <assert.h>
+#include <time.h>
+#include <ctime>
+#include "socket.hh"
 
 const int MAXPENDING = 5; // maximum outstanding connection requests
 
@@ -48,6 +42,19 @@ std::string prt_time()
   str_time += " ";
   return str_time;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//str_extract()
+//extract last component of file full path
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::string str_extract(const std::string &str_in)
+{
+  size_t pos = str_in.find_last_of("/\\");
+  std::string str = str_in.substr(pos + 1, str_in.size());
+  return str;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //set_daemon
@@ -80,16 +87,15 @@ int set_daemon(const char* str_dir)
     exit(EXIT_FAILURE);
   }
 
-  if ((chdir(str_dir)) < 0)
+  if (str_dir)
   {
-    std::cout << "cannot chdir to: " << str_dir << std::endl;
-    exit(EXIT_FAILURE);
+    if ((chdir(str_dir)) < 0)
+    {
+      std::cout << "cannot chdir to: " << str_dir << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    std::cout << "chdir to: " << str_dir << std::endl;
   }
-  std::cout << "chdir to: " << str_dir << std::endl;
-
-  close(STDIN_FILENO);
-  close(STDOUT_FILENO);
-  close(STDERR_FILENO);
 #endif
   return 0;
 }
@@ -296,6 +302,8 @@ int socket_t::hostname_to_ip(const char *host_name, char *ip)
 //socket_t::write_json
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if defined (HAVE_JANSSON)
+
 int socket_t::write_json(json_t *json)
 {
   char *buf_json = NULL;
@@ -354,6 +362,7 @@ json_t * socket_t::read_json()
   json_t *json = json_loads(str_json.c_str(), JSON_DISABLE_EOF_CHECK, err);
   return json;
 }
+#endif //HAVE_JANSSON
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //tcp_server_t::tcp_server_t
@@ -517,7 +526,7 @@ tcp_client_t::~tcp_client_t()
 //function shall still return this data.
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int socket_t::parse_http_headers()
+int socket_t::parse_http_headers(std::string &http_headers)
 {
   int recv_size; // size in bytes received or -1 on error 
   const int size_buf = 4096;
@@ -531,6 +540,13 @@ int socket_t::parse_http_headers()
 
   std::string str(buf);
   size_t pos = str.find("\r\n\r\n");
+
+  if (pos == std::string::npos)
+  {
+    std::cout << "HTTP header bad format" << std::endl;
+    return -1;
+  }
+
   std::string str_headers(str.substr(0, pos + 4));
   int header_len = static_cast<int>(pos + 4);
 
@@ -546,6 +562,7 @@ int socket_t::parse_http_headers()
   //sanity check
   std::string str1(buf);
   assert(str1 == str);
+  http_headers = str_headers;
   return 0;
 }
 

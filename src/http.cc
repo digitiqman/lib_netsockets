@@ -17,17 +17,6 @@
 #include "socket.hh"
 #include "http.hh"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//str_extract()
-//extract last component of file full path
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-std::string str_extract(const std::string &str_in)
-{
-  size_t pos = str_in.find_last_of("/\\");
-  std::string str = str_in.substr(pos + 1, str_in.size());
-  return str;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //http_t::http_t()
@@ -67,7 +56,8 @@ int http_t::get(const char *path_remote_file, bool verbose)
   std::cout << "request: " << buf_request << std::endl;
 
   //parse headers
-  if (parse_http_headers() < 0)
+  std::string http_headers;
+  if (parse_http_headers(http_headers) < 0)
   {
     return -1;
   }
@@ -78,6 +68,29 @@ int http_t::get(const char *path_remote_file, bool verbose)
   //we sent a close() server request, so we can use the read_all function
   //that checks for recv() return value of zero (connection closed)
   this->read_all_get_close(str_file_name.c_str(), verbose);
+
+  return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//http_t::get
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int http_t::post(const std::string& str_body)
+{
+  char buf_request[1024];
+
+  //construct request message using class input parameters
+  sprintf(buf_request, "POST / HTTP/1.1\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s\r\n",
+    (int)str_body.size(), str_body.c_str());
+
+  //send request, using built in tcp_client_t socket
+  if (this->write(buf_request, strlen(buf_request)) < 0)
+  {
+    return -1;
+  }
+
+  std::cout << "request: " << buf_request << std::endl;
 
   return 0;
 }
