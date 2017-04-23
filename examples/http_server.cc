@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "socket.hh"
-#include "http.hh"
 
 bool verbose = true;
 
@@ -27,7 +26,7 @@ int handle_client(socket_t& socket);
 
 int main(int argc, char *argv[])
 {
-  unsigned short port = http_port;
+  unsigned short port = 3000;
 
   for (int i = 1; i < argc && argv[i][0] == '-'; i++)
   {
@@ -83,28 +82,15 @@ int handle_client(socket_t& socket)
     return -1;
   }
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
-  //find Content-Length:
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  size_t pos = http_headers.find("Content-Length: ");
-  if (pos == std::string::npos)
-  {
-    std::cout << "Content-Length: not found in body\n";
-    return -1;
-  }
-
-  pos = pos + std::string("Content-Length: ").size();
-  //assume boby lenght has 2 characters
-  std::string str_len = http_headers.substr(pos, 2);
+  unsigned long long size_boby = http_extract_field("Content-Length: ", http_headers);
 
   if (verbose)
   {
-    std::cout << "received: Content-Length: " << str_len << std::endl;
+    std::cout << "received: Content-Length: " << size_boby << std::endl;
   }
 
   //now get body using size of Content-Length
-  int len_recv = std::stoi(str_len);
+  int len_recv = (int)size_boby;
   if ((recv_size = recv(socket.m_socket_fd, buf, len_recv, 0)) == -1)
   {
     std::cout << "recv error: " << strerror(errno) << std::endl;

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 {
   const char *host_name = "127.0.0.1"; // server name 
   const char *path_name = "index.html"; // name of file to retrieve
-  unsigned short port = http_port;
+  unsigned short port = 3000;
   bool verbose = false;
   bool get = false;
 

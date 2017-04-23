@@ -566,5 +566,34 @@ int socket_t::parse_http_headers(std::string &http_headers)
   return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//extract a HTTP header field size size and numeric value
+//example: extract "Content-Length: 20"
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned long long http_extract_field(const std::string& str_field, const std::string& str_header)
+{
+  size_t pos = str_header.find(str_field);
+  pos += std::string(str_field).size();
+
+  //character position
+  size_t pos_c = pos;
+  //'\r' position
+  size_t pos_r;
+  while (1)
+  {
+    pos_r = str_header.find('\r', pos);
+    if (pos_r != std::string::npos)
+    {
+      break;
+    }
+    pos++;
+  }
+  //number of digits in number
+  size_t size_n = pos_r - pos_c;
+  std::string str_n(str_header.substr(pos_c, size_n));
+  unsigned long long size_body = std::stoll(str_n);
+  return size_body;
+}
 
 

@@ -17,6 +17,7 @@
 //utils
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+unsigned long long http_extract_field(const std::string& str_field, const std::string& str_header);
 std::string str_extract(const std::string &str_in);
 std::string prt_time();
 int set_daemon(const char* str_dir);

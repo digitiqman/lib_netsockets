@@ -9,14 +9,12 @@
 #include <arpa/inet.h>
 #include <netdb.h> //hostent
 #endif
-
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include "assert.h"
 #include "socket.hh"
 #include "http.hh"
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //http_t::http_t()
