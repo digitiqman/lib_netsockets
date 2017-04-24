@@ -16,6 +16,7 @@ void usage()
   std::cout << "-g Use GET of -f FILE, otherwise POST is used" << std::endl;
   std::cout << "-f FILE: file located at web server root; file path name must start with '/' (default index.html)" << std::endl;
   std::cout << "-v: verbose, output of retrieved file is printed" << std::endl;
+  std::cout << "-w : connect to a web service " << std::endl;
   std::cout << "-h: help, exit" << std::endl;
   exit(0);
 }
@@ -31,7 +32,8 @@ int main(int argc, char *argv[])
   const char *path_name = "index.html"; // name of file to retrieve
   unsigned short port = 3000;
   bool verbose = false;
-  bool get = false;
+  bool get = true;
+  bool mapzen = false;
 
   for (int i = 1; i < argc; i++)
   {
@@ -47,6 +49,9 @@ int main(int argc, char *argv[])
         break;
       case 'g':
         get = true;
+        break;
+      case 'w':
+        mapzen = true;
         break;
       case 's':
         host_name = argv[i + 1];
@@ -82,7 +87,38 @@ int main(int argc, char *argv[])
 
   if (get)
   {
-    client.get(path_name, verbose);
+    std::string str_header;
+
+    // -s search.mapzen.com -p 80 -w
+    if (mapzen)
+    {
+      str_header += "GET /v1/search?api_key=mapzen-hdJZGhf&text=YMCA&size=2 HTTP/1.1\r\n";
+      str_header += "Host: ";
+      str_header += "search.mapzen.com";
+      str_header += "\r\n";
+      str_header += "Accept: application/json\r\n";
+      str_header += "Connection: close";
+      str_header += "\r\n";
+      str_header += "\r\n";
+      //send request, using built in tcp_client_t socket
+      if (client.write(str_header.c_str(), str_header.size()) < 0)
+      {
+        return -1;
+      }
+
+      //we sent a close() server request, so we can use the read_all function
+      //that checks for recv() return value of zero (connection closed)
+      if (client.read_all_get_close("mazen.response.txt", verbose)< 0)
+      {
+        return -1;
+      }
+
+    }
+    else
+    {
+      client.get(path_name, verbose);
+    }
+
   }
   else
   {
