@@ -146,8 +146,8 @@ void socket_t::close()
 
 int socket_t::write(const void *_buf, int size_buf)
 {
-  const char *buf = (char*)_buf; // can't do pointer arithmetic on void* 
-  int send_size; // size in bytes sent or -1 on error 
+  const char *buf = static_cast<const char *>(_buf); // can't do pointer arithmetic on void* 
+  int sent_size; // size in bytes sent or -1 on error 
   size_t size_left; // size in bytes left to send 
   const int flags = 0;
 
@@ -155,36 +155,66 @@ int socket_t::write(const void *_buf, int size_buf)
 
   while (size_left > 0)
   {
-    if ((send_size = send(m_socket_fd, buf, size_left, flags)) == -1)
+    //write the data, being careful of interrupted system calls and partial results
+    do
+    {
+      sent_size = send(m_socket_fd, buf, size_left, flags);
+    } while (-1 == sent_size && EINTR == errno);
+
+    if (-1 == sent_size)
     {
       std::cout << "send error: " << strerror(errno) << std::endl;
       return -1;
     }
-    size_left -= send_size;
-    buf += send_size;
+
+    size_left -= sent_size;
+    buf += sent_size;
   }
 
   return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-//socket_t::read_some
-//assumptions: 
-//total size to receive is not known
-//other end did not close() connection, so not possible to check a zero return value of recv()
+//socket_t::read
+//read SIZE_BUF bytes of data from M_SOCKET_FD into buffer BUF 
+//return total size read
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int socket_t::read_some(void *buf, int size_buf)
+int socket_t::read(void *_buf, int size_buf)
 {
+  char *buf = static_cast<char *>(_buf); // can't do pointer arithmetic on void* 
   int recv_size; // size in bytes received or -1 on error 
+  size_t size_left; // size in bytes left to send 
   const int flags = 0;
+  int total_recv_size = 0;
 
-  if ((recv_size = recv(m_socket_fd, static_cast<char *>(buf), size_buf, flags)) == -1)
+  size_left = size_buf;
+
+  while (size_left > 0)
   {
-    std::cout << "recv error: " << strerror(errno) << std::endl;
+    //read the data, being careful of interrupted system calls and partial results
+    do
+    {
+      recv_size = recv(m_socket_fd, buf, size_left, flags);
+    } while (-1 == recv_size && EINTR == errno);
+
+    if (-1 == recv_size)
+    {
+      std::cout << "recv error: " << strerror(errno) << std::endl;
+    }
+
+    //everything received, exit
+    if (0 == recv_size)
+    {
+      break;
+    }
+
+    size_left -= recv_size;
+    buf += recv_size;
+    total_recv_size += recv_size;
   }
 
-  return recv_size;
+  return total_recv_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -209,16 +239,25 @@ int socket_t::read_all_get_close(const char *file_name, bool verbose)
   file = fopen(file_name, "wb");
   while (1)
   {
-    if ((recv_size = recv(m_socket_fd, buf, size_buf, flags)) == -1)
+    //read the data, being careful of interrupted system calls and partial results
+    do
+    {
+      recv_size = recv(m_socket_fd, buf, size_buf, flags);
+    } while (-1 == recv_size && EINTR == errno);
+
+    if (-1 == recv_size)
     {
       std::cout << "recv error: " << strerror(errno) << std::endl;
     }
+
     total_recv_size += recv_size;
+
     if (recv_size == 0)
     {
       std::cout << "all bytes received " << std::endl;
       break;
     }
+
     if (verbose)
     {
       for (int i = 0; i < recv_size; i++)
@@ -226,45 +265,11 @@ int socket_t::read_all_get_close(const char *file_name, bool verbose)
         std::cout << buf[i];
       }
     }
+
     fwrite(buf, recv_size, 1, file);
   }
   fclose(file);
   return total_recv_size;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-//socket_t::read_all_known_size
-//assumptions: 
-//total size to receive is known, size_read
-///////////////////////////////////////////////////////////////////////////////////////
-
-std::string socket_t::read_all_known_size(size_t size_read)
-{
-  const int size_buf = size_read;
-  char *buf = new char[size_buf];
-  int recv_size; // size in bytes received or -1 on error 
-  size_t size_left; // size in bytes left to receive 
-  const int flags = 0;
-
-  size_left = size_read;
-
-  std::string str_ret;
-  while (size_left > 0)
-  {
-    if ((recv_size = recv(m_socket_fd, buf, size_buf, flags)) == -1)
-    {
-      std::cout << "recv error: " << strerror(errno) << std::endl;
-    }
-    size_left -= recv_size;
-    std::string str(buf);
-    //terminate buffer with received size
-    str.resize(recv_size);
-    //export buffer
-    str_ret += str;
-  }
-
-  delete[] buf;
-  return str_ret;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -355,7 +360,14 @@ json_t * socket_t::read_json()
   size_json = static_cast<size_t>(atoi(str_header.c_str()));
 
   //read from socket with known size
-  std::string str_json = read_all_known_size(size_json);
+  char *buf = new char[size_json];
+  if (this->read(buf, size_json) < 0)
+  {
+    std::cout << "recv error: " << strerror(errno) << std::endl;
+    return NULL;
+  }
+  std::string str_json(buf, size_json);
+  delete[]buf;
 
   //construct and return JSON (c_str() is NULL terminated, JSON_DISABLE_EOF_CHECK must be set)
   json_error_t *err = NULL;

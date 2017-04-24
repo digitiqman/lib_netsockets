@@ -33,7 +33,7 @@ void handle_client(socket_t& socket)
 {
   char buf[255];
   int recv_size;
-  recv_size = socket.read_some(buf, sizeof(buf));
+  recv_size = socket.read(buf, sizeof(buf));
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //read

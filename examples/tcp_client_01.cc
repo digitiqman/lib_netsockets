@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   //read
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  recv_size = client.read_some(buf, sizeof(buf));
+  recv_size = client.read(buf, sizeof(buf));
 
   //strip extra charactes received (size is not known, detect end of message)
   std::string str(buf);

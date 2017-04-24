@@ -34,9 +34,8 @@ public:
   ~socket_t();
   void close();
   int write(const void *buf, int size_buf);
-  int read_some(void *buf, int size_buf);
+  int read(void *buf, int size_buf);
   int read_all_get_close(const char *file_name, bool verbose);
-  std::string read_all_known_size(size_t size_read);
   int hostname_to_ip(const char *host_name, char *ip);
 
 public:
