@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     // -s search.mapzen.com -p 80 -w
     if (mapzen)
     {
-      str_header += "GET /v1/search?api_key=mapzen-hdJZGhf&text=YMCA&size=2 HTTP/1.1\r\n";
+      str_header += "GET /v1/search?api_key=mapzen-YOUR_API_KEY&text=YMCA&size=2 HTTP/1.1\r\n";
       str_header += "Host: ";
       str_header += "search.mapzen.com";
       str_header += "\r\n";
