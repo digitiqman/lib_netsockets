@@ -76,19 +76,19 @@ int http_t::get(const char *path_remote_file, bool verbose)
 
 int http_t::post(const std::string& str_body)
 {
-  char buf_request[1024];
+  char buf[1024];
 
   //construct request message using class input parameters
-  sprintf(buf_request, "POST / HTTP/1.1\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s\r\n",
+  sprintf(buf, "POST / HTTP/1.1\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",
     (int)str_body.size(), str_body.c_str());
 
   //send request, using built in tcp_client_t socket
-  if (this->write(buf_request, strlen(buf_request)) < 0)
+  if (this->write(buf, strlen(buf)) < 0)
   {
     return -1;
   }
 
-  std::cout << "request: " << buf_request << std::endl;
+  std::cout << "request: " << buf << std::endl;
 
   return 0;
 }

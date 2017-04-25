@@ -71,34 +71,30 @@ int main(int argc, char *argv[])
 
 int handle_client(socket_t& socket)
 {
-  std::string http_headers;
-  int recv_size; // size in bytes received or -1 on error 
-  const int size_buf = 4096;
-  char buf[size_buf];
+  std::string str_header;
+  char buf[4096];
 
-  if (socket.parse_http_headers(http_headers) < 0)
+  if (socket.parse_http_headers(str_header) < 0)
   {
     std::cout << "parse_http_headers error\n";
     return -1;
   }
 
-  unsigned long long size_boby = http_extract_field("Content-Length: ", http_headers);
+  unsigned long long size_body = http_extract_field("Content-Length: ", str_header);
 
   if (verbose)
   {
-    std::cout << "received: Content-Length: " << size_boby << std::endl;
+    std::cout << "received: Content-Length: " << size_body << std::endl;
   }
 
   //now get body using size of Content-Length
-  int len_recv = (int)size_boby;
-  if ((recv_size = recv(socket.m_socket_fd, buf, len_recv, 0)) == -1)
+  if (socket.read(buf, (int)size_body) < 0)
   {
     std::cout << "recv error: " << strerror(errno) << std::endl;
     return -1;
   }
 
-  std::string str_body(buf);
-  str_body.resize(len_recv);
+  std::string str_body(buf, (unsigned int)size_body);
 
   if (verbose)
   {

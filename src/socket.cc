@@ -586,6 +586,11 @@ int socket_t::parse_http_headers(std::string &http_headers)
 unsigned long long http_extract_field(const std::string& str_field, const std::string& str_header)
 {
   size_t pos = str_header.find(str_field);
+  if (pos == std::string::npos)
+  {
+    //not found
+    return 0;
+  }
   pos += std::string(str_field).size();
 
   //character position

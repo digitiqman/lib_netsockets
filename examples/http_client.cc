@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   const char *path_name = "index.html"; // name of file to retrieve
   unsigned short port = 3000;
   bool verbose = false;
-  bool get = true;
+  bool get = false;
   bool mapzen = false;
 
   for (int i = 1; i < argc; i++)
