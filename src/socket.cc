@@ -141,10 +141,10 @@ void socket_t::close()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-//socket_t::write
+//socket_t::write_all
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int socket_t::write(const void *_buf, int size_buf)
+int socket_t::write_all(const void *_buf, int size_buf)
 {
   const char *buf = static_cast<const char *>(_buf); // can't do pointer arithmetic on void* 
   int sent_size; // size in bytes sent or -1 on error 
@@ -175,12 +175,12 @@ int socket_t::write(const void *_buf, int size_buf)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-//socket_t::read
+//socket_t::read_all
 //read SIZE_BUF bytes of data from M_SOCKET_FD into buffer BUF 
 //return total size read
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int socket_t::read(void *_buf, int size_buf)
+int socket_t::read_all(void *_buf, int size_buf)
 {
   char *buf = static_cast<char *>(_buf); // can't do pointer arithmetic on void* 
   int recv_size; // size in bytes received or -1 on error 
@@ -324,7 +324,7 @@ int socket_t::write_json(json_t *json)
   buf_send += "#";
   buf_send += std::string(buf_json);
   free(buf_json);
-  return (this->write(buf_send.data(), buf_send.size()));
+  return (this->write_all(buf_send.data(), buf_send.size()));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -361,7 +361,7 @@ json_t * socket_t::read_json()
 
   //read from socket with known size
   char *buf = new char[size_json];
-  if (this->read(buf, size_json) < 0)
+  if (this->read_all(buf, size_json) < 0)
   {
     std::cout << "recv error: " << strerror(errno) << std::endl;
     return NULL;
@@ -613,4 +613,23 @@ unsigned long long http_extract_field(const std::string& str_field, const std::s
   return size_body;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//return body part of HTTP response (take out HTPP headers)
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::string http_extract_body(const std::string& str_header)
+{
+  std::string body;
+
+  size_t pos = str_header.find("\r\n\r\n");
+
+  if (pos == std::string::npos)
+  {
+    std::cout << "HTTP header bad format" << std::endl;
+    std::cout << str_header << std::endl;
+    return body;
+  }
+
+  body = str_header.substr(pos + 4);
+  return body;
+}

@@ -33,7 +33,7 @@ void handle_client(socket_t& socket)
 {
   char buf[255];
   int recv_size;
-  recv_size = socket.read(buf, sizeof(buf));
+  recv_size = socket.read_all(buf, sizeof(buf));
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //read
@@ -50,7 +50,7 @@ void handle_client(socket_t& socket)
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   sprintf(buf, "67\r\n");
-  socket.write(buf, strlen(buf));
+  socket.write_all(buf, strlen(buf));
   std::cout << "server sent " << strlen(buf) << " bytes: " << buf;
 
 

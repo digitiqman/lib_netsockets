@@ -88,7 +88,7 @@ int handle_client(socket_t& socket)
   }
 
   //now get body using size of Content-Length
-  if (socket.read(buf, (int)size_body) < 0)
+  if (socket.read_all(buf, (int)size_body) < 0)
   {
     std::cout << "recv error: " << strerror(errno) << std::endl;
     return -1;
@@ -113,7 +113,7 @@ int handle_client(socket_t& socket)
     std::cout << str_response << std::endl;
   }
 
-  if (socket.write(str_response.c_str(), str_response.size()) < 0)
+  if (socket.write_all(str_response.c_str(), str_response.size()) < 0)
   {
     std::cout << "write response error\n";
     return -1;

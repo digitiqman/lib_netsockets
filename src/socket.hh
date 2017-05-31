@@ -18,6 +18,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 unsigned long long http_extract_field(const std::string& str_field, const std::string& str_header);
+std::string http_extract_body(const std::string& str_header);
 std::string str_extract(const std::string &str_in);
 std::string prt_time();
 int set_daemon(const char* str_dir);
@@ -33,8 +34,8 @@ public:
   socket_t(int socket_fd, sockaddr_in sock_addr);
   ~socket_t();
   void close();
-  int write(const void *buf, int size_buf);
-  int read(void *buf, int size_buf);
+  int write_all(const void *buf, int size_buf);
+  int read_all(void *buf, int size_buf);
   int read_all_get_close(const char *file_name, bool verbose);
   int hostname_to_ip(const char *host_name, char *ip);
 

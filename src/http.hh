@@ -7,7 +7,7 @@
 //http_t
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class http_t: public tcp_client_t
+class http_t : public tcp_client_t
 {
 public:
   http_t(const char *host_name, const unsigned short server_port);
