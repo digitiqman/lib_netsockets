@@ -58,6 +58,9 @@ For a Windows Visual Studio build a statically build runtime library can be set 
 cmake .. -DSTATIC_CRT:BOOL=ON
 </pre>
 
+Visual Studio projects
+------------
+Available at /msvc
 
 #Usage
 lib_netsockets is C++ light wrapper for POSIX and Winsock sockets with implementation of TCP client/server using JSON messages,and HTTP, FTP clients.

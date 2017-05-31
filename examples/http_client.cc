@@ -108,9 +108,10 @@ int main(int argc, char *argv[])
       //The effect of this scoring boost diminishes to zero after 100 kilometers away from the focus.point
       /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-      std::string str_search = "YMCA";
+      std::string str_search = "Ella's Wood-fired Pizza";
       std::string str_lat = "38.9072";
       std::string str_lon = "-77.0369";
+      str_search = escape_space(str_search);
 
       header += "GET /v1/search?api_key=mapzen-hdJZGhf&text=";
       header += str_search;
@@ -144,17 +145,17 @@ int main(int argc, char *argv[])
 
       //we sent a close() server request, so we can use the read_all function
       //that checks for recv() return value of zero (connection closed)
-      if (client.read_all_get_close("mazen.response.txt", verbose) < 0)
+      if (client.read_all_get_close("mapzen.response.txt", verbose) < 0)
       {
         return -1;
       }
 
-      std::ifstream ifs("mazen.response.txt", std::ios::binary);
+      std::ifstream ifs("mapzen.response.txt", std::ios::binary);
       std::stringstream buf;
       buf << ifs.rdbuf();
       std::cout << buf.str();
       std::string str_body = http_extract_body(buf.str());
-      std::ofstream ofs("mazen.response.json", std::ios::out | std::ios::binary);
+      std::ofstream ofs("mapzen.response.json", std::ios::out | std::ios::binary);
       ofs.write(str_body.c_str(), str_body.size());
       ofs.close();
     }

@@ -633,3 +633,38 @@ std::string http_extract_body(const std::string& str_header)
   body = str_header.substr(pos + 4);
   return body;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//escape_space
+//in the query part, spaces may be encoded to either "+" (for backwards compatibility:
+//do not try to search for it in the URI standard) or "%20" while the "+" character 
+//(as a result of this ambiguity) has to be escaped to "%2B".
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::string escape_space(const std::string &str)
+{
+  std::string str_out;
+  size_t pos = str.find(' ');
+  if (pos == std::string::npos)
+  {
+    str_out = str;
+  }
+  else
+  {
+    std::string s;
+    for (size_t idx = 0; idx < str.size(); idx++)
+    {
+      if (str.at(idx) == ' ')
+      {
+        s += "%20";
+      }
+      else
+      {
+        s += str.at(idx);
+      }
+    }
+    str_out = s;
+  }
+  return str_out;
+}
+
