@@ -62,10 +62,10 @@ Visual Studio projects
 ------------
 Available at /msvc
 
-#Usage
+# Usage
 lib_netsockets is C++ light wrapper for POSIX and Winsock sockets with implementation of TCP client/server using JSON messages,and HTTP, FTP clients.
 
-#TCP server example
+# TCP server example
 ```c++
 tcp_server_t server(2000);
 while (true)
@@ -77,7 +77,7 @@ while (true)
 server.close();
 ```
 
-#TCP client example
+# TCP client example
 ```c++
 tcp_client_t client("127.0.0.1", 2000);
 client.open();
@@ -86,13 +86,13 @@ client.read_some(buf, sizeof(buf));
 client.close();
 ```
 
-#HTTP client example
+# HTTP client example
 ```c++
 http_t client("www.mysite.com", 80);
 client.get("/my/path/to/file", true);
 ```
 
-#FTP client example
+# FTP client example
 Get file list from FTP server and first file in list
 ```c++
 ftp_t ftp("my.ftp.site", 21);
@@ -102,7 +102,7 @@ ftp.get_file(ftp.m_file_nslt.at(0).c_str());
 ftp.logout();
 ```
 
-#JSON messages
+# JSON messages
 JSON message requests are made using the jansson JSON library. An example that defines a JSON object defined as 
 
 <pre>
