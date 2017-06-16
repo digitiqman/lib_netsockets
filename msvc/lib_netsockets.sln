@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "json_client", "json_client.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "json_server", "json_server.vcxproj", "{BCB0CA88-D203-4994-A406-9F8671F9FFAF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqlite_server", "sqlite_server.vcxproj", "{00F7CF4E-5028-4F19-8A33-03C3BDAABDCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -57,6 +59,10 @@ Global
 		{BCB0CA88-D203-4994-A406-9F8671F9FFAF}.Debug|x86.Build.0 = Debug|Win32
 		{BCB0CA88-D203-4994-A406-9F8671F9FFAF}.Release|x86.ActiveCfg = Debug|Win32
 		{BCB0CA88-D203-4994-A406-9F8671F9FFAF}.Release|x86.Build.0 = Debug|Win32
+		{00F7CF4E-5028-4F19-8A33-03C3BDAABDCA}.Debug|x86.ActiveCfg = Debug|Win32
+		{00F7CF4E-5028-4F19-8A33-03C3BDAABDCA}.Debug|x86.Build.0 = Debug|Win32
+		{00F7CF4E-5028-4F19-8A33-03C3BDAABDCA}.Release|x86.ActiveCfg = Release|Win32
+		{00F7CF4E-5028-4F19-8A33-03C3BDAABDCA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
