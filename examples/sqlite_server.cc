@@ -47,11 +47,13 @@ public:
 void usage()
 {
   std::cout << "-h: help, exit" << std::endl;
-  std::cout << "-t PORT: server port (default 3000)" << std::endl;
-  std::cout << "-c: create table" << std::endl;
+  std::cout << "-o PORT: server port (default 3000)" << std::endl;
+  std::cout << "-c: create table places" << std::endl;
+  std::cout << "-t: create table items" << std::endl;
   std::cout << "-p: insert place" << std::endl;
   std::cout << "-i: insert item" << std::endl;
-  std::cout << "-g: get rows" << std::endl;
+  std::cout << "-g: get rows from table 'places'" << std::endl;
+  std::cout << "-f: get rows from table 'items'" << std::endl;
   std::cout << "-a: create table,insert place,insert item" << std::endl;
   exit(0);
 }
@@ -66,9 +68,7 @@ int main(int argc, char *argv[])
 {
   const char *buf_server = "127.0.0.1";
   unsigned short port = 3000;
-  char buf[1024];
   sql_action_t sql_action = sql_action_t::sql_none;
-  std::string str_json;
 
   for (int i = 1; i < argc && argv[i][0] == '-'; i++)
   {
@@ -130,8 +130,8 @@ int main(int argc, char *argv[])
   //make sql and JSON
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  char buf_json[257] = { 0 };
-  gason::JSonBuilder doc(buf_json, 256);
+  char buf_json[1024] = { 0 };
+  gason::JSonBuilder doc(buf_json, 1023);
   doc.startArray();
   sql_t sql;
   switch (sql_action)
@@ -169,15 +169,16 @@ int main(int argc, char *argv[])
   doc.endArray();
 
   //construct request message using sql in body
-  sprintf(buf, "POST / HTTP/1.1\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",
+  char buf_request[1024];
+  sprintf(buf_request, "POST / HTTP/1.1\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",
     strlen(buf_json), buf_json);
 
-  if (client.write_all(buf, strlen(buf)) < 0)
+  if (client.write_all(buf_request, strlen(buf_request)) < 0)
   {
 
   }
-  std::cout << "client: sent " << strlen(buf) << " bytes: " << buf;
-  std::cout << "client: \n" << buf << std::endl;
+  std::cout << "client: sent " << strlen(buf_request) << " bytes: " << buf_request;
+  std::cout << "client: \n" << buf_request << std::endl;
 
   client.close();
 
@@ -244,6 +245,7 @@ int handle_client(socket_t& socket)
   std::vector<std::string> vec_sql;
   for (gason::JsonNode *node = root.toNode(); node != nullptr; node = node->next)
   {
+    std::cout << node->value.toString() << std::endl;
     vec_sql.push_back(node->value.toString());
   }
 
