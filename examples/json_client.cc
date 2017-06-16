@@ -5,6 +5,12 @@
 #include <assert.h>
 #include "socket.hh"
 
+#ifdef HAVE_GASON
+#include "gason.hpp"
+#include "jsonbuilder.hpp"
+using namespace gason;
+#endif
+
 unsigned short port = 2001;
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -14,19 +20,17 @@ unsigned short port = 2001;
 
 int main(int argc, char *argv[])
 {
-#if defined (HAVE_JANSSON)
-  char buf_server[255]; // server host name or IP
-  char* buf = NULL;
-  std::string str_response;
+#if defined (HAVE_GASON)
+  char server[255]; // server host name or IP
 
-  strcpy(buf_server, "127.0.0.1");
+  strcpy(server, "127.0.0.1");
 
   for (int i = 1; i < argc && argv[i][0] == '-'; i++)
   {
     switch (argv[i][1])
     {
     case 's':
-      strcpy(buf_server, argv[i + 1]);
+      strcpy(server, argv[i + 1]);
       i++;
       break;
     case 'p':
@@ -36,15 +40,15 @@ int main(int argc, char *argv[])
     }
   }
 
-
   //make JSON
-  json_t *request = json_object();
-  json_object_set_new(request, "start_year", json_integer(2016));
+  char buf_json[257] = { 0 };
+  gason::JSonBuilder doc(buf_json, 256);
+  doc.startObject();
+  doc.addValue("start_year", 2017);
+  doc.endObject();
 
-  json_dump_file(request, "request.json", 0);
-
-  tcp_client_t client(buf_server, port);
-  std::cout << "client connecting to: " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
+  tcp_client_t client(server, port);
+  std::cout << "client connecting to: " << server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //create socket and open connection
@@ -52,61 +56,26 @@ int main(int argc, char *argv[])
 
   if (client.open() < 0)
   {
-    std::string  str = "connect error to: ";
-    str += buf_server;
-    std::cout << str << ":" << port << std::endl;
-    json_decref(request);
-    return 1;
   }
-  std::cout << "client connected to: " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
+  std::cout << "client connected to: " << server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //write request
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  if (client.write_json(request) < 0)
+  if (client.write_json(buf_json) < 0)
   {
-    std::string  str = "send error to: ";
-    str += buf_server;
-    std::cout << str << ":" << port << std::endl;
-    json_decref(request);
-    return 1;
   }
-
   std::cout << "client sent: ";
-
-  buf = json_dumps(request, 0);
-  std::cout << buf << " " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
-  free(buf);
+  std::cout << buf_json << " " << server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //read response
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  json_t *response = client.read_json();
-
-  if (NULL == response)
-  {
-    std::string  str = "recv error from: ";
-    str += buf_server;
-    std::cout << str << ":" << port << std::endl;
-    json_decref(request);
-    return 1;
-  }
-
-  std::string str_response_name("response");
-  if (str_response.size())
-  {
-     str_response_name += str_response;
-  }
-  str_response_name += ".json";
-  json_dump_file(response, str_response_name.c_str(), 0);
-
+  std::string str_response = client.read_json();
   std::cout << "client received: ";
-
-  buf = json_dumps(response, 0);
-  std::cout << buf << " " << buf_server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
-  free(buf);
+  std::cout << str_response << " " << server << ":" << port << " <" << client.m_socket_fd << "> " << std::endl;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //close connection

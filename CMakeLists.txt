@@ -1,30 +1,8 @@
-#options
-#JANSSON_INCLUDE
-#JANSSON_LIBRARY
 
 cmake_minimum_required(VERSION 2.8)
 project (lib_netsockets)
 include(CheckCXXCompilerFlag)
 set(BUILD_SHARED_LIBRARIES OFF)
-set(HAVE_JANSSON OFF)
-
-find_path(JANSSON_INCLUDE_FOUND jansson.h HINTS ${JANSSON_INCLUDE} "/usr/include" "/data/data127/pvicente/install/jansson-2.9/include")
-if(NOT JANSSON_INCLUDE_FOUND)
-  message("-- jansson.h header file not found...JSON functions will not be available")
-else()
-  message("-- Found jansson.h header file at: " ${JANSSON_INCLUDE_FOUND})
-  add_definitions(-DHAVE_JANSSON)
-  set(HAVE_JANSSON ON)
-endif()
-
-if (HAVE_JANSSON)
-find_library(JANSSON_LIBRARY NAMES jansson HINTS "/data/data127/pvicente/install/jansson-2.9/lib/")
-if(NOT JANSSON_LIBRARY)
-  message(FATAL_ERROR "jansson library not found")
-else()
-  message("-- Found jansson library at: " ${JANSSON_LIBRARY})
-endif()
-endif(HAVE_JANSSON)
 
 if (MSVC)
   add_definitions( "/D_CRT_SECURE_NO_WARNINGS /D_WINSOCK_DEPRECATED_NO_WARNINGS" )
@@ -55,14 +33,8 @@ else ()
 endif()
 
 set(LIBS ${LIBS} ${WINSOCK_LIBRARY})
-if (HAVE_JANSSON)
-set(LIBS ${LIBS} ${JANSSON_LIBRARY})
-endif(HAVE_JANSSON)
 
 include_directories(src)
-if (HAVE_JANSSON)
-include_directories(${JANSSON_INCLUDE_FOUND})
-endif(HAVE_JANSSON)
 
 set(SOURCES src/socket.cc src/http.cc src/ftp.cc src/socket.hh src/http.hh src/ftp.hh)
 add_executable(tcp_client_01 examples/tcp_client_01.cc ${SOURCES})

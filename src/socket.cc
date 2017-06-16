@@ -307,23 +307,15 @@ int socket_t::hostname_to_ip(const char *host_name, char *ip)
 //socket_t::write_json
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if defined (HAVE_JANSSON)
-
-int socket_t::write_json(json_t *json)
+int socket_t::write_json(const char* buf_json)
 {
-  char *buf_json = NULL;
   std::string buf_send;
-  size_t size_json;
-
-  //get char* from json_t
-  buf_json = json_dumps(json, JSON_PRESERVE_ORDER & JSON_COMPACT);
-  size_json = strlen(buf_json);
+  size_t size_json = strlen(buf_json);
 
   //construct send buffer, adding a header with size in bytes of JSON and # terminator
   buf_send = std::to_string(static_cast<long long unsigned int>(size_json));
   buf_send += "#";
   buf_send += std::string(buf_json);
-  free(buf_json);
   return (this->write_all(buf_send.data(), buf_send.size()));
 }
 
@@ -331,7 +323,7 @@ int socket_t::write_json(json_t *json)
 //json_socket_t::read_json
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-json_t * socket_t::read_json()
+std::string socket_t::read_json()
 {
   int recv_size; // size in bytes received or -1 on error 
   size_t size_json = 0; //in bytes
@@ -367,14 +359,9 @@ json_t * socket_t::read_json()
     return NULL;
   }
   std::string str_json(buf, size_json);
-  delete[]buf;
-
-  //construct and return JSON (c_str() is NULL terminated, JSON_DISABLE_EOF_CHECK must be set)
-  json_error_t *err = NULL;
-  json_t *json = json_loads(str_json.c_str(), JSON_DISABLE_EOF_CHECK, err);
-  return json;
+  delete[] buf;
+  return str_json;
 }
-#endif //HAVE_JANSSON
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //tcp_server_t::tcp_server_t
@@ -406,7 +393,7 @@ tcp_server_t::tcp_server_t(const unsigned short server_port)
   server_addr.sin_port = htons(server_port);        // local port
 
   // bind to the local address
-  if (bind(m_socket_fd, (sockaddr*)&server_addr, sizeof(server_addr)) < 0)
+  if (::bind(m_socket_fd, (sockaddr*)&server_addr, sizeof(server_addr)) < 0)
   {
     //bind error: Permission denied
     //probably trying to bind a port under 1024. These ports usually require root privileges to be bound.
@@ -415,7 +402,7 @@ tcp_server_t::tcp_server_t(const unsigned short server_port)
   }
 
   // mark the socket so it will listen for incoming connections
-  if (listen(m_socket_fd, MAXPENDING) < 0)
+  if (::listen(m_socket_fd, MAXPENDING) < 0)
   {
     std::cout << "listen error: " << std::endl;
     exit(1);

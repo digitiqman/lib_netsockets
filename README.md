@@ -1,29 +1,15 @@
 # lib_netsockets
 C++ light wrapper for POSIX and Winsock sockets with implementation of TCP client/server using JSON messages,and HTTP, FTP clients
 
-Dependencies
+Dependencies (included)
 ------------
 
-[Jansson](http://www.digip.org/jansson/)
-Jansson is a C library for encoding, decoding and manipulating JSON data.
+[GASON++](https://github.com/azadkuh/gason--)
 <br /> 
 
 
 Building from source
 ------------
-
-Install dependency packages: Debian-based systems (like Ubuntu)
-<pre>
-sudo apt-get install build-essential
-sudo apt-get install cmake
-sudo apt-get install libjansson-dev
-</pre>
-
-Install dependency packages: For RPM-based systems (like Fedora and CentOS)
-<pre>
-sudo yum install cmake
-sudo yum install jansson-devel
-</pre>
 
 Get source:
 <pre>
@@ -48,10 +34,6 @@ cmake ..
 
 Building with CMake in Windows
 ------------
-If the Jansson library is not found, it can be set with 
-<pre>
-cmake .. -DJANSSON_INCLUDE:PATH=/your/jansson/include/path -DJANSSON_LIBRARY=/your/jansson/library/file/name
-</pre>
 
 For a Windows Visual Studio build a statically build runtime library can be set with. 
 <pre>
@@ -102,50 +84,5 @@ ftp.get_file(ftp.m_file_nslt.at(0).c_str());
 ftp.logout();
 ```
 
-# JSON messages
-JSON message requests are made using the jansson JSON library. An example that defines a JSON object defined as 
 
-<pre>
-{"start_year": 2016}
-</pre>
-is
-
-```c++
-json_t *request = json_object();
-json_object_set_new(request, "start_year", json_integer(2016));
-```
-
-The connection and message transmission to the server is made with
-```c++
-client.open();
-client.write(request);
-```
-
-The server handles the client request in the function handle_client(), that uses the socket_t class read() function
-to parse the JSON message. In this case, the object with JSON key "start_year" is obtained, then a JSON response
-is made with and object with key "next_year", that is written to the socket, using the socket_t class write()
-
-```c++
-void handle_client(socket_t& socket_client)
-{
-  json_t *response = NULL;
-  json_t *request = socket_client.read();
-  json_t *json_obj;
-  json_obj = json_object_get(request, "start_year");
-  json_int_t start_year = json_integer_value(json_obj);
-  response = json_object();
-  json_object_set_new(response, "next_year", json_integer(start_year + 1));
-  socket_client.write(response);
-}
-```
-
-The client in turn receives the server response, and closes the opened socket, with
-
-```c++
-json_t *response = client.read();
-json_t *json_obj;
-json_obj = json_object_get(response, "next_year");
-json_int_t next_year = json_integer_value(json_obj);
-client.close();
-```
 

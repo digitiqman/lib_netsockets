@@ -1,0 +1,16 @@
+{
+  "an_array": [
+    10,
+    11,
+    12
+  ],
+  "a_boolean": true,
+  "a_null": null,
+  "a_number": 123,
+  "an_object": {
+    "a": "b",
+    "c": "d",
+    "e": "f"
+  },
+  "a_message": "Hello World"
+}
