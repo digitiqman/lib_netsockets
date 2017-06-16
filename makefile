@@ -4,7 +4,7 @@
 
 dir_bin = .
 
-INC = -Iexternal/gasoncpp
+INC = -Isrc -Iexternal/gasoncpp
 LIB = 
 
 SRC1 = src/socket.cc
@@ -65,11 +65,11 @@ $(EXE4) : $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN4)
 $(EXE5) : $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN5) 
 	$(CXX) $(LINK_FLAG) -o $(EXE5) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN5) $(LIB)
 
-$(EXE6) : $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN6) 
-	$(CXX) $(LINK_FLAG) -o $(EXE6) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN6) $(LIB)
+$(EXE6) : $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ_MAIN6) 
+	$(CXX) $(LINK_FLAG) -o $(EXE6) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ_MAIN6) $(LIB)
 
 $(EXE7) : $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN7) 
-	$(CXX) $(LINK_FLAG) -o $(EXE7) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ_MAIN7) $(LIB)
+	$(CXX) $(LINK_FLAG) -o $(EXE7) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ_MAIN7) $(LIB)
 
 $(OBJ1) : $(SRC1)
 	$(CXX) $(INC) $(CXX_FLAG) -c $(SRC1) -o $(OBJ1)
@@ -79,7 +79,7 @@ $(OBJ2) : $(SRC2)
 
 $(OBJ3) : $(SRC3)
 	$(CXX) $(INC) $(CXX_FLAG) -c $(SRC3) -o $(OBJ3)
-
+	
 $(OBJ4) : $(SRC4)
 	$(CXX) $(INC) $(CXX_FLAG) -c $(SRC4) -o $(OBJ4)
 	
