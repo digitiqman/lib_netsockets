@@ -10,6 +10,9 @@
 #endif
 #include <string>
 
+#if defined (HAVE_JANSSON)
+#include <jansson.h>
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //utils
@@ -54,6 +57,12 @@ public:
 
   int write_json(const char* buf_json);
   std::string read_json();
+
+
+#if defined (HAVE_JANSSON)
+  int write_jansson(json_t *json);
+  json_t * read_jansson();
+#endif
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,12 +1,27 @@
 # lib_netsockets
-C++ light wrapper for POSIX and Winsock sockets with implementation of TCP client/server using JSON messages,and HTTP, FTP clients
+C++ light wrapper for POSIX and Winsock sockets using TCP. Examples include:
+<br /> 
+* TCP client/server using custom JSON messages
+* HTTP client/server
+* FTP client
+* SSL TCP client
 
-Dependencies (included)
+Dependencies 
 ------------
 
-[GASON++](https://github.com/azadkuh/gason--)
+[GASON++](https://github.com/azadkuh/gason--) (included)
 <br /> 
 
+SSL TCP example
+------------
+[OpenSSL](https://www.openssl.org/) (not included)
+<br /> 
+
+Visual Studio project for the SSL example in /msvc.
+After building OpenSSL, define the environment variables:
+* HEADER_OPENSSL (e.g C:\ssl\include)
+* LIB_OPENSSL (e.g C:\ssl\lib\libssl.lib)
+* LIB_CRYPTO (e.g C:\ssl\lib\libcrypto.lib)
 
 Building from source
 ------------
