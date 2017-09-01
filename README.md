@@ -23,6 +23,12 @@ After building OpenSSL, define the environment variables:
 * LIB_OPENSSL (e.g C:\ssl\lib\libssl.lib)
 * LIB_CRYPTO (e.g C:\ssl\lib\libcrypto.lib)
 
+Building with CMake
+
+<pre>
+cmake .. -DOPENSSL_INCLUDE=C:\ssl\include -DOPENSSL_LIBRARY=C:\ssl\lib\libssl.lib -DCRYPTO_LIBRARY=C:\ssl\lib\libcrypto.lib
+</pre>
+
 Building from source
 ------------
 

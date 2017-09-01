@@ -1,10 +1,15 @@
 #include "ssl_socket.hh"
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <assert.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //ssl_socket_t::ssl_socket_t
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ssl_socket_t::ssl_socket_t()
+ssl_socket_t::ssl_socket_t() :
+  m_ssl(NULL)
 {
 #if defined (_MSC_VER)
   WSADATA ws_data;
@@ -26,8 +31,11 @@ ssl_socket_t::~ssl_socket_t()
 #endif
   ERR_free_strings();
   EVP_cleanup();
-  SSL_shutdown(m_ssl);
-  SSL_free(m_ssl);
+  if (m_ssl)
+  {
+    SSL_shutdown(m_ssl);
+    SSL_free(m_ssl);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +55,7 @@ void ssl_socket_t::close()
 //ssl_socket_t::open
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int ssl_socket_t::open(int period, int days, std::string ticker, const char *str_ip)
+int ssl_socket_t::open(const char *str_ip)
 {
   struct sockaddr_in server_addr;
 
@@ -86,25 +94,6 @@ int ssl_socket_t::open(int period, int days, std::string ticker, const char *str
     return -1;
   }
 
-
-  //The URL format is: https://www.google.com/finance/getprices?i=[PERIOD]&p=[DAYS]d&f=d,o,h,l,c,v&df=cpct&q=[TICKER]
-  //Example: https://www.google.com/finance/getprices?i=3600&p=1d&f=d,o&df=cpct&q=.DJI
-  //[PERIOD] : Interval or frequency in seconds
-  //[DAYS] : The historical data period, where "10d" means that we need historical stock prices data for the past 10 days.
-  //[TICKER] : This is the ticker symbol of the stock
-
-  std::string request;
-  request = "GET https://www.google.com/finance/getprices?i=";
-  request += std::to_string(period);
-  request += "&p=";
-  request += std::to_string(days);;
-  request += "d&f=d,o&df=cpct&q=";
-  request += ticker;
-  request += "  HTTP/1.1\r\n\r\n";
-
-  send(request.c_str());
-  parse_http_headers();
-  receive();
   return 0;
 }
 
@@ -115,8 +104,24 @@ int ssl_socket_t::open(int period, int days, std::string ticker, const char *str
 int ssl_socket_t::send(const char *buf)
 {
   std::cout << buf;
-  int sent_size;
-  sent_size = SSL_write(m_ssl, buf, strlen(buf));
+  int len = SSL_write(m_ssl, buf, strlen(buf));
+  if (len < 0)
+  {
+    int err = SSL_get_error(m_ssl, len);
+    switch (err)
+    {
+    case SSL_ERROR_WANT_WRITE:
+      return 0;
+    case SSL_ERROR_WANT_READ:
+      return 0;
+    case SSL_ERROR_ZERO_RETURN:
+    case SSL_ERROR_SYSCALL:
+    case SSL_ERROR_SSL:
+    default:
+      return -1;
+    }
+  }
+
   return 0;
 }
 
@@ -147,7 +152,7 @@ int ssl_socket_t::parse_http_headers()
 
   std::string str_headers(str.substr(0, pos + 4));
   int header_len = static_cast<int>(pos + 4);
-  std::cout << str_headers.c_str() << std::endl;
+  std::cout << str_headers.c_str();
 
   //now get headers with the obtained size from socket
   if ((recv_size = SSL_read(m_ssl, buf, header_len)) == -1)
@@ -163,23 +168,20 @@ int ssl_socket_t::parse_http_headers()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //ssl_socket_t::receive
-//SSL_read blocks; here we detect end of message to exit
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ssl_socket_t::receive()
 {
-  size_t pos;
   int len = 1024;
-  char buf[1000000];
-  std::string str_all;
+  char buf[1025];
+  parse_http_headers();
   do
   {
     len = SSL_read(m_ssl, buf, 1024);
     buf[len] = 0;
-    std::cout << buf;
     std::string str(buf);
-    str_all += str;
-    pos = str.find("\n\r\n");
+    m_response += str;
+    size_t pos = str.find("\n\r\n");
     if (pos != std::string::npos)
     {
       //found end of data
@@ -192,35 +194,20 @@ int ssl_socket_t::receive()
       break;
     }
   } while (len > 0);
-
-  pos = str_all.find("TIMEZONE_OFFSET");
-  pos = str_all.find("\n", pos + 1);
-  pos = str_all.find("\n", pos + 1);
-  //data starts here
-  size_t pos_end = str_all.find("\n\r\n");
-  //data ends here
-  std::string str_data = str_all.substr(pos + 1, pos_end - pos);
-  pos = 0;
-  std::string str_rec;
-  size_t pos_0; //previous position
-  while (true)
+  if (len < 0)
   {
-    pos_0 = pos;
-    pos = str_data.find("\n", pos + 1);
-    if (pos == std::string::npos)
-    {
-      //found end of data
-      break;
-    }
-
-    str_rec = str_data.substr(pos_0, pos - pos_0);
-    size_t pos_c = str_rec.find(",");
-    std::string str_time = str_rec.substr(0, pos_c);
-    std::string str_value = str_rec.substr(pos_c + 1);
-    std::cout << str_time.c_str() << " " << str_value.c_str() << std::endl;
-    time_value_t tv(std::stoi(str_time), std::stof(str_value));
-    m_tv.push_back(tv);
+    int err = SSL_get_error(m_ssl, len);
+    if (err == SSL_ERROR_WANT_READ)
+      return 0;
+    if (err == SSL_ERROR_WANT_WRITE)
+      return 0;
+    if (err == SSL_ERROR_ZERO_RETURN || err == SSL_ERROR_SYSCALL || err == SSL_ERROR_SSL)
+      return -1;
   }
+
+  std::ofstream ofs("response.txt", std::ios::out | std::ios::binary);
+  ofs.write(m_response.c_str(), m_response.size());
+  ofs.close();
   return 0;
 }
 

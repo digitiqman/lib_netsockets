@@ -1,8 +1,28 @@
+#CMake build, Pedro Vicente 
+#command line options for library dependencies
+#-DOPENSSL_INCLUDE=PATH (e.g C:\ssl\include)
+#-DOPENSSL_LIBRARY=FILE (e.g C:\ssl\lib\libssl.lib)
+#-DCRYPTO_LIBRARY=FILE (e.g C:\ssl\lib\libcrypto.lib)
+
+#///////////////////////////////////////////////////////
+#logic for finding header files and library dependencies:
+#find_path
+#find_library
+#are used (with optional location hints); the first argument contains the found file if found.
+#and the message "-- Found file at location" is made
+#if not found the first argument variable is the same as a user option that contains the file location full path.
+#the same message "-- Found file at location" is made
+#but there is not an attempt at this time to validate the user input file (.h or .a)
+#///////////////////////////////////////////////////////
 
 cmake_minimum_required(VERSION 2.8)
 project (lib_netsockets)
 include(CheckCXXCompilerFlag)
 set(BUILD_SHARED_LIBRARIES OFF)
+
+#///////////////////////////////////////////////////////
+#MSVC
+#///////////////////////////////////////////////////////
 
 if (MSVC)
   add_definitions( "/D_CRT_SECURE_NO_WARNINGS /D_WINSOCK_DEPRECATED_NO_WARNINGS" )
@@ -13,7 +33,6 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE        "/MT /O2 /Ob2 /D NDEBUG")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/MT /Zi /O2 /Ob1 /D NDEBUG")
   endif()  
-  set(WINSOCK_LIBRARY ws2_32.lib)
 endif(MSVC)
 
 if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -32,7 +51,10 @@ else ()
   set (CMAKE_CXX_STANDARD 11)
 endif()
 
-set(LIBS ${LIBS} ${WINSOCK_LIBRARY})
+set(LIBS ${LIBS})
+if (MSVC)
+  set(LIBS ${LIBS} ws2_32.lib)
+endif(MSVC)
 
 include_directories(src)
 
@@ -51,3 +73,37 @@ target_link_libraries (http_server ${LIBS})
 target_link_libraries (ftp_client ${LIBS})
 target_link_libraries (json_client ${LIBS})
 target_link_libraries (json_server ${LIBS})
+
+#///////////////////////////////////////////////////////
+#OpenSSL
+#///////////////////////////////////////////////////////
+
+find_path(OPENSSL_INCLUDE_FOUND openssl/ssl.h HINTS ${OPENSSL_INCLUDE})
+if(NOT OPENSSL_INCLUDE_FOUND)
+  message("-- OpenSSL header files not found")
+else()
+  message("-- Found OpenSSL header files at: " ${OPENSSL_INCLUDE_FOUND})
+endif()
+
+find_library(OPENSSL_LIBRARY NAMES ssl)
+if(NOT OPENSSL_LIBRARY)
+  message("-- OpenSSL library not found")
+else()
+  message("-- Found OpenSSL library at: " ${OPENSSL_LIBRARY})
+endif()
+
+find_library(CRYPTO_LIBRARY NAMES crypto)
+if(NOT CRYPTO_LIBRARY)
+  message("-- CRYPTO library not found")
+else()
+  message("-- Found CRYPTO library at: " ${CRYPTO_LIBRARY})
+endif()
+
+if(OPENSSL_INCLUDE_FOUND)
+  add_executable(ssl_client src/ssl_socket.cc examples/ssl_client.cc )
+  target_include_directories(ssl_client PRIVATE ${OPENSSL_INCLUDE_FOUND})
+  if (MSVC)
+    set(LIBS ${LIBS} crypt32.lib)
+  endif(MSVC)
+  target_link_libraries (ssl_client ${LIBS} ${OPENSSL_LIBRARY} ${CRYPTO_LIBRARY}) 
+endif(OPENSSL_INCLUDE_FOUND)
