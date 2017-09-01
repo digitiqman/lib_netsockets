@@ -372,7 +372,7 @@ void ftp_t::close_socket(int sock)
 #if defined (_MSC_VER)
   closesocket(sock);
 #else
-  ::close(sock);
+  close(sock);
 #endif
 }
 

@@ -59,9 +59,9 @@ int main(int argc, char *argv[])
     {
       std::cout << "error on client handling";
     }
-    socket.close();
+    socket.close_socket();
   }
-  server.close();
+  server.close_socket();
   return 0;
 }
 

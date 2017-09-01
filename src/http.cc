@@ -68,7 +68,7 @@ int http_t::get(const char *path_remote_file, bool verbose)
     if (this->read_all(buf, size_body) < 0)
     {
       std::cout << "recv error: " << strerror(errno) << std::endl;
-      return NULL;
+      return 0;
     }
     std::string str(buf, size_body);
     std::cout << "body:\n" << str << std::endl;

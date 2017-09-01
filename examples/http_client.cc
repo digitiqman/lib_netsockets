@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
     std::string str_body("start_year=2016&end_year=2017");
     client.post(str_body);
   }
-  client.close();
+  client.close_socket();
   return 0;
 }
 

@@ -17,9 +17,9 @@ int main(int argc, char *argv[])
   {
     socket_t socket = server.accept_client();
     handle_client(socket);
-    socket.close();
+    socket.close_socket();
   }
-  server.close();
+  server.close_socket();
   return 0;
 }
 

@@ -81,10 +81,10 @@ int main(int argc, char *argv[])
     }
 
     std::cout << prt_time() << "server sent: " << buf_json << std::endl;
-    socket.close();
+    socket.close_socket();
     free(buf_request);
   }
-  server.close();
+  server.close_socket();
   return 0;
 #endif
 }

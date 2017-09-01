@@ -6,6 +6,7 @@
 #if defined (_MSC_VER)
 #include <winsock.h>
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -23,7 +24,7 @@ public:
   ssl_socket_t();
   ~ssl_socket_t();
   int open(const char *str_ip);
-  void close();
+  void close_socket();
   int send(const char *buf);
   int receive();
 

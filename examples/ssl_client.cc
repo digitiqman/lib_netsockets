@@ -10,6 +10,6 @@ int main(int argc, char *argv[])
     "GET https://www.google.com/finance/getprices?i=86400&p=1Y&f=d,o&df=cpct&q=.DJI  HTTP/1.1\r\n\r\n";
   ssl.send(request.c_str());
   ssl.receive();
-  ssl.close();
+  ssl.close_socket();
   return 0;
 }

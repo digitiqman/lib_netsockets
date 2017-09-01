@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
   std::cout << "client: sent " << strlen(buf_request) << " bytes: " << buf_request;
   std::cout << "client: \n" << buf_request << std::endl;
 
-  client.close();
+  client.close_socket();
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   //server loop
@@ -198,10 +198,10 @@ int main(int argc, char *argv[])
     {
 
     }
-    socket.close();
+    socket.close_socket();
     exit(0);
   }
-  server.close();
+  server.close_socket();
   return 0;
 }
 

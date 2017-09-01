@@ -26,6 +26,10 @@ After building OpenSSL, define the environment variables:
 Building with CMake
 
 <pre>
+sudo apt-get install libssl-dev
+</pre>
+
+<pre>
 cmake .. -DOPENSSL_INCLUDE=C:\ssl\include -DOPENSSL_LIBRARY=C:\ssl\lib\libssl.lib -DCRYPTO_LIBRARY=C:\ssl\lib\libcrypto.lib
 </pre>
 

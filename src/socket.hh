@@ -4,6 +4,7 @@
 #if defined (_MSC_VER)
 #include <winsock.h>
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -35,7 +36,7 @@ public:
   socket_t();
   socket_t(int socket_fd, sockaddr_in sock_addr);
   ~socket_t();
-  void close();
+  void close_socket();
   int write_all(const void *buf, int size_buf);
   int read_all(void *buf, int size_buf);
   int read_all_get_close(const char *file_name, bool verbose);
