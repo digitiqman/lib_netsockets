@@ -2,6 +2,7 @@
 C++ light wrapper for POSIX and Winsock sockets using TCP. Examples include:
 <br /> 
 * TCP client/server using custom JSON messages
+* TCP client/server sending SQL as JSON to SQLite database in TCP server
 * HTTP client/server
 * FTP client
 * SSL TCP client
@@ -9,18 +10,37 @@ C++ light wrapper for POSIX and Winsock sockets using TCP. Examples include:
 Dependencies 
 ------------
 
+SQLite TCP example
+------------
 [GASON++](https://github.com/azadkuh/gason--) (included)
 <br /> 
+
+[SQLite](https://www.sqlite.org/) (included)
+<br /> 
+
 
 SSL TCP example
 ------------
 [OpenSSL](https://www.openssl.org/) (not included)
 <br /> 
 
-Building with CMake
+Install OpenSSL
+
+Linux
 
 <pre>
 sudo apt-get install libssl-dev
+</pre>
+
+Windows
+
+<pre>
+perl Configure VC-WIN32 no-asm no-shared --debug --prefix=c:\ssl 
+</pre>
+
+Building with CMake
+
+<pre>
 cmake .. -DOPENSSL_INCLUDE=C:\ssl\include -DOPENSSL_LIBRARY=C:\ssl\lib\libssl.lib -DCRYPTO_LIBRARY=C:\ssl\lib\libcrypto.lib
 </pre>
 
@@ -107,4 +127,8 @@ ftp.logout();
 # SQLite server/client example
 Send SQL commands as JSON array from TCP client to TCP server
 
-
+<pre>
+CREATE TABLE IF NOT EXISTS table_places(place_id TEXT PRIMARY KEY NOT NULL,address CHAR(50) NOT NULL,rank INTEGER NOT NULL);
+INSERT INTO table_places VALUES('home', '102 E. Green St. Urbana IL 61801', 1);
+SELECT * FROM table_places WHERE place_id = 'home';
+</pre>
