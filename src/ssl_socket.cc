@@ -78,8 +78,7 @@ int ssl_socket_t::open(const char *str_ip)
   SSL_library_init();
   SSLeay_add_ssl_algorithms();
   SSL_load_error_strings();
-  const SSL_METHOD *meth = TLSv1_2_client_method();
-  SSL_CTX *ctx = SSL_CTX_new(meth);
+  SSL_CTX *ctx = SSL_CTX_new(TLSv1_2_client_method());
   m_ssl = SSL_new(ctx);
   if (!m_ssl)
   {

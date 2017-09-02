@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\examples\tcp_client_01.cc" />
+    <ClCompile Include="..\examples\tcp_client.cc" />
     <ClCompile Include="..\src\ftp.cc" />
     <ClCompile Include="..\src\http.cc" />
     <ClCompile Include="..\src\socket.cc" />
@@ -23,7 +23,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FBE2CE9A-FC28-477F-91D8-C425C5573181}</ProjectGuid>
-    <RootNamespace>tcp_client_01</RootNamespace>
+    <RootNamespace>tcp_client</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

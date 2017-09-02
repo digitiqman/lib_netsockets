@@ -17,21 +17,20 @@ SSL TCP example
 [OpenSSL](https://www.openssl.org/) (not included)
 <br /> 
 
+Building with CMake
+
+<pre>
+sudo apt-get install libssl-dev
+cmake .. -DOPENSSL_INCLUDE=C:\ssl\include -DOPENSSL_LIBRARY=C:\ssl\lib\libssl.lib -DCRYPTO_LIBRARY=C:\ssl\lib\libcrypto.lib
+</pre>
+
+
 Visual Studio project for the SSL example in /msvc.
 After building OpenSSL, define the environment variables:
 * HEADER_OPENSSL (e.g C:\ssl\include)
 * LIB_OPENSSL (e.g C:\ssl\lib\libssl.lib)
 * LIB_CRYPTO (e.g C:\ssl\lib\libcrypto.lib)
 
-Building with CMake
-
-<pre>
-sudo apt-get install libssl-dev
-</pre>
-
-<pre>
-cmake .. -DOPENSSL_INCLUDE=C:\ssl\include -DOPENSSL_LIBRARY=C:\ssl\lib\libssl.lib -DCRYPTO_LIBRARY=C:\ssl\lib\libcrypto.lib
-</pre>
 
 Building from source
 ------------
@@ -49,20 +48,16 @@ make -f makefile
 make -f makefile test
 </pre>
 
-Building with CMake in Unix
+Building with CMake
 ------------
-On most Unix systems, the Jansson library is found on the default location with
 <pre>
 cd build
 cmake ..
 </pre>
 
-Building with CMake in Windows
-------------
-
 For a Windows Visual Studio build a statically build runtime library can be set with. 
 <pre>
-cmake .. -DSTATIC_CRT:BOOL=ON
+cmake .. -G "Visual Studio 14" -DSTATIC_CRT:BOOL=ON
 </pre>
 
 Visual Studio projects
