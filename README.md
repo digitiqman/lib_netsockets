@@ -104,5 +104,7 @@ ftp.get_file(ftp.m_file_nslt.at(0).c_str());
 ftp.logout();
 ```
 
+# SQLite server/client example
+Send SQL commands as JSON array from TCP client to TCP server
 
 

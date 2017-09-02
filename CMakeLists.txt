@@ -58,7 +58,12 @@ endif(MSVC)
 
 include_directories(src)
 
-set(SOURCES src/socket.cc src/http.cc src/ftp.cc src/socket.hh src/http.hh src/ftp.hh)
+set(SOURCES ${SOURCES} src/socket.hh)
+set(SOURCES ${SOURCES} src/socket.cc)
+set(SOURCES ${SOURCES} src/http.hh)
+set(SOURCES ${SOURCES} src/http.cc)
+set(SOURCES ${SOURCES} src/ftp.hh)
+set(SOURCES ${SOURCES} src/ftp.cc)
 add_executable(tcp_client examples/tcp_client.cc ${SOURCES})
 add_executable(tcp_server examples/tcp_server.cc ${SOURCES})
 add_executable(http_client examples/http_client.cc ${SOURCES})
@@ -73,6 +78,20 @@ target_link_libraries (http_server ${LIBS})
 target_link_libraries (ftp_client ${LIBS})
 target_link_libraries (json_client ${LIBS})
 target_link_libraries (json_server ${LIBS})
+
+#///////////////////////////////////////////////////////
+#SQLite server example (uses JSON, SQLite)
+#///////////////////////////////////////////////////////
+
+set(SOURCES ${SOURCES} external/sqlite-3.18.0/sqlite3.h)
+set(SOURCES ${SOURCES} external/sqlite-3.18.0/sqlite3.c)
+set(SOURCES ${SOURCES} external/gasoncpp/gason.hpp)
+set(SOURCES ${SOURCES} external/gasoncpp/gason.cpp)
+add_executable(sqlite_server examples/sqlite_server.cc ${SOURCES})
+target_include_directories(sqlite_server PRIVATE external/sqlite-3.18.0)
+target_include_directories(sqlite_server PRIVATE external/gasoncpp)
+target_link_libraries (sqlite_server ${LIBS})
+
 
 #///////////////////////////////////////////////////////
 #OpenSSL

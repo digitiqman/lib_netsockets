@@ -70,6 +70,11 @@ int main(int argc, char *argv[])
   unsigned short port = 3000;
   sql_action_t sql_action = sql_action_t::sql_none;
 
+  if (argc == 1)
+  {
+    sql_action = sql_action_t::sql_all;
+  }
+
   for (int i = 1; i < argc && argv[i][0] == '-'; i++)
   {
     switch (argv[i][1])
@@ -116,7 +121,7 @@ int main(int argc, char *argv[])
   //client
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  tcp_client_t client(buf_server, port);
+  tcp_client_t client("127.0.0.1", 3000);
   if (client.open() < 0)
   {
     std::string  str = "connect error to: ";
@@ -177,8 +182,8 @@ int main(int argc, char *argv[])
   {
 
   }
-  std::cout << "client: sent " << strlen(buf_request) << " bytes: " << buf_request;
-  std::cout << "client: \n" << buf_request << std::endl;
+
+  std::cout << "client sent: \n" << buf_request << std::endl;
 
   client.close_socket();
 
@@ -242,12 +247,16 @@ int handle_client(socket_t& socket)
 
   }
 
+  std::cout << std::endl << "Parsing SQL in JSON..." << std::endl << std::endl;
+
   std::vector<std::string> vec_sql;
   for (gason::JsonNode *node = root.toNode(); node != nullptr; node = node->next)
   {
     std::cout << node->value.toString() << std::endl;
     vec_sql.push_back(node->value.toString());
   }
+
+  std::cout << std::endl << "Executing SQL to database..." << std::endl << std::endl;
 
   size_t nbr_sql = vec_sql.size();
   for (size_t idx = 0; idx < nbr_sql; idx++)
