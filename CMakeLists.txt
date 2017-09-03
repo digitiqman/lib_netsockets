@@ -90,7 +90,7 @@ set(SOURCES ${SOURCES} external/gasoncpp/gason.cpp)
 add_executable(sqlite_server examples/sqlite_server.cc ${SOURCES})
 target_include_directories(sqlite_server PRIVATE external/sqlite-3.18.0)
 target_include_directories(sqlite_server PRIVATE external/gasoncpp)
-target_link_libraries (sqlite_server ${LIBS})
+target_link_libraries (sqlite_server ${LIBS} ${CMAKE_DL_LIBS})
 
 
 #///////////////////////////////////////////////////////
