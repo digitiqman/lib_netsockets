@@ -4,6 +4,37 @@
 #include <string>
 #include <assert.h>
 
+///////////////////////////////////////////////////////////////////////////////////////
+//socket_t::hostname_to_ip
+//The getaddrinfo function provides protocol-independent translation from an ANSI host name to an address
+///////////////////////////////////////////////////////////////////////////////////////
+
+int hostname_to_ip(const char *host_name, char *ip)
+{
+  struct addrinfo hints, *servinfo, *p;
+  struct sockaddr_in *h;
+  int rv;
+
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = IPPROTO_TCP;
+
+  if ((rv = getaddrinfo(host_name, "http", &hints, &servinfo)) != 0)
+  {
+    return 1;
+  }
+
+  for (p = servinfo; p != NULL; p = p->ai_next)
+  {
+    h = (struct sockaddr_in *) p->ai_addr;
+    strcpy(ip, inet_ntoa(h->sin_addr));
+  }
+
+  freeaddrinfo(servinfo);
+  return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //ssl_socket_t::ssl_socket_t
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,9 +86,13 @@ void ssl_socket_t::close_socket()
 //ssl_socket_t::open
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int ssl_socket_t::open(const char *str_ip)
+int ssl_socket_t::open(const char *host_name)
 {
   struct sockaddr_in server_addr;
+  char str_ip[100];
+
+  //get ip address from hostname
+  hostname_to_ip(host_name, str_ip);
 
   if ((m_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
   {
@@ -162,6 +197,9 @@ int ssl_socket_t::parse_http_headers()
   //sanity check
   std::string str1(buf);
   assert(str1 == str);
+
+  std::cout << str.c_str() << std::endl;
+
   return 0;
 }
 
@@ -179,6 +217,9 @@ int ssl_socket_t::receive()
     len = SSL_read(m_ssl, buf, 1024);
     buf[len] = 0;
     std::string str(buf);
+
+    std::cout << str.c_str() << std::endl;
+
     m_response += str;
     size_t pos = str.find("\n\r\n");
     if (pos != std::string::npos)

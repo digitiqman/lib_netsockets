@@ -1,10 +1,12 @@
 #ifndef SSL_SOCKET_HH
 #define SSL_SOCKET_HH 1
 
-#include <string>
-
 #if defined (_MSC_VER)
-#include <winsock.h>
+#undef UNICODE
+#include <winsock2.h>
+#include <ws2tcpip.h>
+// link with Ws2_32.lib
+#pragma comment(lib, "Ws2_32.lib")
 #else
 #include <unistd.h>
 #include <sys/socket.h>
@@ -13,6 +15,8 @@
 #endif
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //ssl_socket_t
